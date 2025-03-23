@@ -1,1 +1,1 @@
-# NeuroVision-BHPC-VQA
+# NeuroVision-VQA

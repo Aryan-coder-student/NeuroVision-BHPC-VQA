@@ -1,0 +1,15 @@
+artifact_uri: file:///D:/My%20File/Project/MedHelp-Brain-VQA/End-To-End-Pipline/VQA/mlruns/271729933174040292/0ddd5ed748f54c8883bf1830e5bf029c/artifacts
+end_time: 1742659076026
+entry_point_name: ''
+experiment_id: '271729933174040292'
+lifecycle_stage: active
+run_id: 0ddd5ed748f54c8883bf1830e5bf029c
+run_name: clean-bee-82
+run_uuid: 0ddd5ed748f54c8883bf1830e5bf029c
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1742659058810
+status: 4
+tags: []
+user_id: ASUS
