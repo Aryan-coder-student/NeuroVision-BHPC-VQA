@@ -11,45 +11,6 @@
   <img src="https://github.com/user-attachments/assets/2d6bf915-cecf-4482-bde1-859eaf5fa399">
 </div>
 
-https://github.com/user-attachments/assets/291d6921-2b6f-4eb1-919a-093e32c6d0ec
-
-## 🖥️ Frontend Implementation (⚠️ Under Maintenance)
-
-The project's frontend is maintained in a separate repository by [OoONANCY](https://github.com/OoONANCY) and [ANSHIKA1220](https://github.com/ANSHIKA1220) for modular development and better maintenance. The frontend provides an intuitive user interface for interacting with both the VQA model and medical chatbot functionality.
-
-### Frontend Repository
-
-```
-https://github.com/OoONANCY/Omkar_frontend
-```
-
-The frontend implementation offers:
-
-- User-friendly interface for uploading images
-- Interactive question input for VQA functionality
-- Chat interface for medical queries
-- Responsive design for desktop and mobile devices
-- Real-time display of model predictions and responses
-
-To integrate the frontend with the API:
-
-1. Clone the frontend repository
-```bash
-git clone https://github.com/OoONANCY/Omkar_frontend.git
-cd Omkar_frontend
-```
-
-2. Install dependencies and run the frontend application
-```bash
-npm install
-npm start
-```
-
-3. Ensure the Flask API is running at the expected endpoint (default: http://localhost:5000)
-
-Here’s your updated **Table of Contents** with a dataset download script added:  
-
----
 
 ## 📑 Table of Contents
 - [Dataset Download](#-dataset-download)
