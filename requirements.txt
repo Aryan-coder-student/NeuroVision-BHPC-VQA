@@ -27,3 +27,5 @@ trl
 accelerate
 datasets>=2.19.0
 pyarrow
+pydantic-settings
+huggingface_hub

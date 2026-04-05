@@ -2,27 +2,39 @@ import torch
 from fastapi import FastAPI, File, UploadFile, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from transformers import BlipProcessor, BlipForQuestionAnswering
 from langchain_core.tools import Tool
 from langchain_community.utilities import SerpAPIWrapper, PubMedAPIWrapper
 from langchain_groq import ChatGroq
 from langgraph.prebuilt import create_react_agent
 from langgraph.checkpoint.memory import MemorySaver
-from dotenv import load_dotenv
 import os
 from PIL import Image
 import uvicorn
 import io
 
-load_dotenv()
-os.getenv("SERPAPI_API_KEY")
-os.getenv("GROQ_API_KEY")
+class Settings(BaseSettings):
+    SERPAPI_API_KEY: str = ""
+    GROQ_API_KEY: str = ""
+    PORT: int = 7860
+    CORS_ORIGINS: list[str] = ["*"]
+    
+    model_config = SettingsConfigDict(env_file="Deployment/.env", env_file_encoding="utf-8", extra="ignore")
+
+settings = Settings()
+
+# Set env vars for underlying LangChain clients that natively grab from os.environ
+if settings.SERPAPI_API_KEY:
+    os.environ["SERPAPI_API_KEY"] = settings.SERPAPI_API_KEY
+if settings.GROQ_API_KEY:
+    os.environ["GROQ_API_KEY"] = settings.GROQ_API_KEY
 
 app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=settings.CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -30,7 +42,9 @@ app.add_middleware(
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-fine_tuned_model = BlipForQuestionAnswering.from_pretrained(os.path.join("models", "last-saved-model")).to(device)
+# Download model dynamically from Hugging Face Hub (uploaded via upload_model.py)
+HF_REPO_ID = "pahariaryan121/NeuroVision-VQA"
+fine_tuned_model = BlipForQuestionAnswering.from_pretrained(HF_REPO_ID).to(device)
 processor = BlipProcessor.from_pretrained("Salesforce/blip-vqa-base")
 
 # Initialize memory using the appropriate checkpointer
@@ -97,4 +111,4 @@ async def chat(request: ChatRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == '__main__':
-    uvicorn.run(app, host="0.0.0.0", port=5000)
+    uvicorn.run("app:app", host="0.0.0.0", port=settings.PORT)
