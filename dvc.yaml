@@ -3,7 +3,7 @@ stages:
     cmd: python src/preprocess_data.py
     deps:
       - src/preprocess_data.py
-      - data/bronze/downloads  
+      - data/bronze  
     outs:
       - data/silver  
 

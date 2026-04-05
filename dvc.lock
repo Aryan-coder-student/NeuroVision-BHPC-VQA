@@ -3,18 +3,18 @@ stages:
   preprocess:
     cmd: python src/preprocess_data.py
     deps:
-    - path: data/bronze/downloads
+    - path: data/bronze
       hash: md5
-      md5: 1454b6162c5ef2c24c037ba883797c3b.dir
-      size: 34497027
-      nfiles: 4
+      md5: 44a2a26c7a5ccc1bd695123e0eefbb27.dir
+      size: 119084280
+      nfiles: 7
     - path: src/preprocess_data.py
       hash: md5
-      md5: b1141ff5738a52bee364a048006112a2
-      size: 2333
+      md5: e0f336cb3667d4bfa483d21732c6e428
+      size: 2555
     outs:
     - path: data/silver
       hash: md5
-      md5: 1b44b8c6bbc048557b5285a27b9cc1f5.dir
-      size: 941687
+      md5: 0e6df84ffd9e467bc6a2666d54b348d2.dir
+      size: 1710728
       nfiles: 2
