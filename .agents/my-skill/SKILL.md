@@ -45,3 +45,25 @@ This skill defines the methodology for environment bootstrapping and model train
 1. Generate answers & track metrics via BLEU score using `dvc repro evaluate`.
 2. Start the API by running `python Deployment/app.py`.
 3. Launch the Streamlit chat frontend.
+
+## 5. Hugging Face Spaces Configuration
+
+When configuring the `README.md` for Hugging Face Spaces, ensure you use the following YAML frontmatter template:
+
+```yaml
+---
+title: {{title}}
+emoji: {{emoji}}
+colorFrom: {{colorFrom}}
+colorTo: {{colorTo}}
+sdk: {{sdk}}
+sdk_version: "{{sdkVersion}}"
+{{#pythonVersion}}
+python_version: "{{pythonVersion}}"
+{{/pythonVersion}}
+app_file: app.py
+pinned: false
+---
+```
+
+Check out the configuration reference at https://huggingface.co/docs/hub/spaces-config-reference
