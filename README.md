@@ -1,3 +1,11 @@
+---
+title: NeuroVision API
+emoji: 🧠
+colorFrom: blue
+colorTo: indigo
+sdk: docker
+app_port: 7860
+---
 <div align="center">
 
 # 🧠 NeuroVision — Medical Visual Question Answering
