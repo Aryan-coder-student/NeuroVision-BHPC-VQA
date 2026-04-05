@@ -5,4 +5,5 @@ Deployment/.env
 __pycache__/
 *.pyc
 .hf_cache/
+.tmp/
 mlruns/

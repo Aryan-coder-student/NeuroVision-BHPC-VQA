@@ -64,7 +64,7 @@ def chat_bot_query(query: str):
     )
     
     tools = [search_tool, pubmed_tool]
-    llm = ChatGroq(model="gemma2-9b-it")
+    llm = ChatGroq(model="meta-llama/llama-4-scout-17b-16e-instruct")
     
     # Create the modern ReAct agent using langgraph
     agent_executor = create_react_agent(model=llm, tools=tools, checkpointer=memory)
