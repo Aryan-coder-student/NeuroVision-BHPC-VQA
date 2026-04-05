@@ -1,352 +1,464 @@
-# Visual Question Answering (VQA) System
-
 <div align="center">
-  <img src="https://img.shields.io/badge/Framework-BLIP-blue" alt="BLIP Framework" />
-  <img src="https://img.shields.io/badge/Built%20with-PyTorch-orange" alt="PyTorch" />
-  <img src="https://img.shields.io/badge/Pipeline-DVC-green" alt="DVC Pipeline" />
-  <img src="https://img.shields.io/badge/Deployment-Docker-lightblue" alt="Docker" />
-  <img src="https://img.shields.io/badge/Agent-LangChain-purple" alt="LangChain" />
-</div>
-<div style="display:justify-content;">
-  <img src="https://github.com/user-attachments/assets/2d6bf915-cecf-4482-bde1-859eaf5fa399">
-</div>
 
+# 🧠 NeuroVision — Medical Visual Question Answering
 
-## 📑 Table of Contents
-- [Dataset Download](#-dataset-download)
-- [Project Structure](#-project-structure)
-- [Core Components](#-core-components)
-- [API Architecture](#-api-architecture)
-- [LangChain Agent System](#-langchain-agent-system)
-- [Docker Setup](#-docker-setup)
-- [API Documentation](#-api-documentation)
-- [DVC Pipeline](#-dvc-pipeline)
-- [Installation](#-installation)
-- [Dataset Download](#-dataset-download)
-- [Results & Future Improvements](#-results--future-improvements)
+**An end-to-end VQA system for medical brain imaging, powered by BLIP, LangGraph, and FastAPI.**
+
+[![Framework](https://img.shields.io/badge/Model-BLIP-0052CC?style=for-the-badge&logo=salesforce&logoColor=white)](https://huggingface.co/Salesforce/blip-vqa-base)
+[![PyTorch](https://img.shields.io/badge/Built_with-PyTorch-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white)](https://pytorch.org/)
+[![FastAPI](https://img.shields.io/badge/API-FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![LangGraph](https://img.shields.io/badge/Agent-LangGraph-764ABC?style=for-the-badge&logo=langchain&logoColor=white)](https://github.com/langchain-ai/langgraph)
+[![DVC](https://img.shields.io/badge/Pipeline-DVC-13ADC7?style=for-the-badge&logo=dvc&logoColor=white)](https://dvc.org/)
+[![Docker](https://img.shields.io/badge/Deploy-Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
+[![MLflow](https://img.shields.io/badge/Tracking-MLflow-0194E2?style=for-the-badge&logo=mlflow&logoColor=white)](https://mlflow.org/)
+
+<img src="https://github.com/user-attachments/assets/2d6bf915-cecf-4482-bde1-859eaf5fa399" width="100%">
+
+</div>
 
 ---
 
-## 📥 Dataset Download  
-The VQA-RAD dataset is available on Hugging Face: [flaviagiammarino/vqa-rad](https://huggingface.co/datasets/flaviagiammarino/vqa-rad).  
-To download the **VQA-RAD** dataset from Hugging Face and store it in `data/bronze/`, run the following script:  
+## 🔍 Overview
 
-```python
+NeuroVision is a Visual Question Answering (VQA) system designed for **medical brain imaging** (CT & MRI scans). It fine-tunes the [BLIP](https://huggingface.co/Salesforce/blip-vqa-base) model on the [VQA-RAD](https://huggingface.co/datasets/flaviagiammarino/vqa-rad) dataset and serves predictions through a high-performance **FastAPI** backend, complemented by a **LangGraph-powered AI agent** that can search PubMed and the web for medical context.
+
+### ✨ Key Features
+
+| Feature | Description |
+|---|---|
+| 🖼️ **Image-based VQA** | Upload a brain scan and ask natural-language questions about it |
+| 🤖 **Medical AI Agent** | LangGraph ReAct agent with PubMed + Web search tools |
+| ⚡ **FastAPI Backend** | Async API with automatic OpenAPI docs at `/docs` |
+| 📊 **MLflow Tracking** | Full experiment tracking with metrics, params, and model artifacts |
+| 🔄 **DVC Pipeline** | Reproducible data processing → training → evaluation pipeline |
+| 🐳 **Docker Ready** | One-command containerized deployment |
+| 🎨 **Streamlit UI** | Interactive frontend for visual question answering |
+
+---
+
+## 📋 Table of Contents
+
+- [Overview](#-overview)
+- [Architecture](#-architecture)
+- [Quick Start](#-quick-start)
+- [Installation](#-installation)
+- [Configuration](#️-configuration)
+- [API Reference](#-api-reference)
+- [LangGraph Agent](#-langgraph-agent)
+- [Training Pipeline](#-training-pipeline)
+- [Docker Deployment](#-docker-deployment)
+- [Project Structure](#-project-structure)
+- [Results & Future Work](#-results--future-work)
+
+---
+
+## 🏗 Architecture
+
+```mermaid
+graph LR
+    subgraph Frontend
+        A[Streamlit UI]
+    end
+    subgraph Backend
+        B[FastAPI Server]
+        C[BLIP VQA Model]
+        D[LangGraph Agent]
+    end
+    subgraph External
+        E[PubMed API]
+        F[SerpAPI Web Search]
+        G[Groq LLM - Gemma2]
+    end
+
+    A -- Image + Question --> B
+    A -- Chat Query --> B
+    B -- /predict/ --> C
+    B -- /chat/ --> D
+    D --> G
+    D --> E
+    D --> F
+```
+
+---
+
+## 🚀 Quick Start
+
+Get the entire project running with **two commands**:
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/Aryan-coder-student/NeuroVision-BHPC-VQA.git
+cd NeuroVision-BHPC-VQA
+
+# 2. Run the automated setup script — this does EVERYTHING for you
+bash setup.sh
+```
+
+That's it. The `setup.sh` script handles the complete environment bootstrap:
+
+| Step | What it does |
+|---|---|
+| 1️⃣ | Installs [uv](https://astral.sh/uv) (ultra-fast Python package manager) if not already present |
+| 2️⃣ | Creates a `.venv` virtual environment |
+| 3️⃣ | Activates the virtual environment (cross-platform: Windows & Linux/Mac) |
+| 4️⃣ | Installs all dependencies from `requirements.txt` via `uv pip install` |
+| 5️⃣ | Downloads the [VQA-RAD dataset](https://huggingface.co/datasets/flaviagiammarino/vqa-rad) from Hugging Face into `data/bronze/` |
+
+### After Setup
+
+```bash
+# Add your API keys (required for the medical chatbot)
+echo "SERPAPI_API_KEY=your_key_here" > Deployment/.env
+echo "GROQ_API_KEY=your_key_here" >> Deployment/.env
+
+# Activate the virtual environment (if not already active)
+# Windows
+.venv\Scripts\activate
+# Linux / macOS
+source .venv/bin/activate
+
+# Launch the API server
+python Deployment/app.py
+```
+
+The API will be live at **`http://localhost:5000`** with interactive Swagger docs at **`http://localhost:5000/docs`**.
+
+---
+
+## 📦 Installation
+
+### Prerequisites
+
+| Requirement | Version |
+|---|---|
+| Python | 3.10+ |
+| CUDA (optional) | 11.8+ (for GPU acceleration) |
+| Git | 2.30+ |
+| [uv](https://astral.sh/uv) | Latest (auto-installed by `setup.sh`) |
+
+### Manual Setup
+
+```bash
+# 1. Create and activate virtual environment
+python -m venv .venv
+# Windows
+.venv\Scripts\activate
+# Linux / macOS
+source .venv/bin/activate
+
+# 2. Install dependencies
+pip install -r requirements.txt
+
+# 3. Download the VQA-RAD dataset
+python -c "
 from datasets import load_dataset
-
-dataset = load_dataset("flaviagiammarino/vqa-rad")
-dataset.save_to_disk("data/bronze/")
+dataset = load_dataset('flaviagiammarino/vqa-rad')
+dataset.save_to_disk('data/bronze/')
+print('Dataset downloaded to data/bronze/')
+"
 ```
 
-This ensures that your dataset is properly downloaded and stored in the `bronze` data layer. 🚀
+### Environment Variables
 
-This VQA model enables machines to understand and answer natural language questions about images. Leveraging the BLIP framework, it achieves high accuracy in interpreting visual content and generating relevant textual responses. The system is enhanced with a LangChain-powered agent for handling medical queries beyond image analysis.
+Create a `Deployment/.env` file:
 
-## 📁 Project Structure
-
-```
-VQA/
-│── .dvc/                 # DVC-related files for data versioning
-│── config/               # Configuration files
-│── dags/                 # DAG workflows for pipeline execution
-│── data/                 # Dataset storage
-│   ├── bronze/           # Raw data
-│   ├── silver/           # Processed data
-│   ├── .gitignore        # Ignore large files
-│   ├── bronze.dvc        # DVC tracking file for raw data
-│── Deployment/           # Deployment-related files
-│   ├── __pycache__/      # Python cache files
-│   ├── Model_14...       # Saved fine-tuned model
-│   ├── streamlit/        # Streamlit UI
-│   │   ├── .gitignore    # Ignore unnecessary files in Streamlit
-│   │   ├── .env          # Environment variables
-│   │   ├── main.py       # Streamlit app entry point
-│   ├── app.py            # FastAPI entry point
-│   ├── test_api.py       # API testing script
-│── logs/                 # Logs for debugging and tracking
-│── mlruns/               # MLflow experiment tracking
-│── models/               # Directory for storing trained models
-│── notebooks/            # Jupyter notebooks for model exploration
-│── plugins/              # Additional utilities or extensions
-│── results/              # Evaluation results storage
-│── src/                  # Core source code
-│   ├── __pycache__/      # Python cache files
-│   ├── test/             # Test scripts
-│   ├── model.py          # Model loading and inference
-│   ├── preprocess_data.py # Data preprocessing script
-│   ├── train.py          # Model training script
-│   ├── evaluate.py       # Model evaluation script
-│── .dvcignore            # Ignore files for DVC
-│── .gitignore            # Ignore unnecessary files for Git
-│── config.yaml           # Main configuration file
-│── docker-compose.yml    # Docker Compose setup
-│── Dockerfile            # Docker container setup
-│── dvc.yaml              # DVC pipeline configuration
-│── dvc.lock              # DVC lock file
-│── params.yaml           # Hyperparameter settings
-│── README.md             # Project documentation
-│── requirements.txt      # Python dependencies
+```env
+SERPAPI_API_KEY=your_serpapi_key        # Required for Medical Web Search tool
+GROQ_API_KEY=your_groq_api_key         # Required for the LLM (Gemma2-9b-it)
 ```
 
-## 🧩 Core Components
+| Variable | Purpose | Get it from |
+|---|---|---|
+| `SERPAPI_API_KEY` | Powers the Medical Web Search tool | [serpapi.com](https://serpapi.com/) |
+| `GROQ_API_KEY` | Powers the Gemma2 LLM via Groq | [console.groq.com](https://console.groq.com/) |
 
-### `model.py`
+---
 
-- ⚙️ Loads the **BLIP model for Visual Question Answering**
-- 🔄 Initializes the model and processor
-- ⚡ Fetches model configurations from `config.yaml`
-- 📤 Returns both the model and its processor for inference and training
+## ⚙️ Configuration
 
-### `train.py`
+All project configuration is centralized in two YAML files:
 
-- 🏋️ Handles **model training** using **PyTorch**
-- 📊 Loads preprocessed datasets
-- 🚀 Implements **gradient accumulation** and **mixed precision training**
-- 📈 Tracks **training loss, validation loss, and BLEU score**
-- 📝 Uses **MLflow** for experiment tracking
-- 🛑 Implements **early stopping** to save the best model
-- 💾 Saves the trained model in `Deployment/Model/`
-
-### `evaluate.py`
-
-- ⚖️ Loads the trained model and the test dataset
-- 🎯 Generates answers using the model
-- 📏 Computes **BLEU scores** to measure model performance
-- 📁 Saves evaluation results as **JSON files** in `results/`
-- 🔍 Compares the last saved model with the best-performing model
-
-### `preprocess_data.py`
-
-- 📥 Loads the **VQA dataset**
-- 🖼️ Converts images to RGB format and tokenizes text data
-- 🔄 Uses the BLIP processor to encode images and questions
-- 📤 Saves the processed data as **pickle files** in `data/silver/`
-
-## 🌐 API Architecture
-
-### `app.py` - FastAPI Implementation
-
-The FastAPI application serves as the fast, asynchronous backbone of our deployment strategy, offering two primary endpoints:
-
-1. **Image Question Answering (`/predict/`)**
-   - Receives an image file and a question using FastAPI's standard `File` and `Form` dependencies.
-   - Processes the image using the BLIP processor
-   - Passes the processed inputs to the fine-tuned model
-   - Returns the generated answer as a JSON response
-
-2. **Medical Chatbot (`/chat/`)**
-   - Accepts a text query related to medical topics using Pydantic validation models.
-   - Forwards the query to a LangChain-powered agent
-   - Returns comprehensive medical information from multiple sources
-
-**Key Components:**
-- **CORS Support**: Enables cross-origin requests via FastAPI `CORSMiddleware`.
-- **Environment Variables**: Securely loads API keys for external services
-- **GPU/CPU Detection**: Automatically selects the appropriate device for model inference
-- **Error Handling**: Implements `HTTPException` error captures for all endpoints
-
-## 🤖 LangChain Agent System
-
-Our system employs a sophisticated LangChain agent architecture to handle medical queries beyond image analysis:
-
-### Agent Components
-
-1. **Search Tools**
-   - **Medical Web Search**: Utilizes SerpAPI to search the web for medical information related to brain, CT, and MRI scans
-   - **PubMed Search**: Connects to PubMed API for accessing peer-reviewed medical research papers
-
-2. **LLM Backend**
-   - Powered by Groq's **Gemma2-9b-it** model for generating coherent and accurate responses
-   - Configured for medical domain specialization
-
-3. **Memory System**
-   - Implements LangGraph's `MemorySaver` checkpointer to consistently securely maintain context.
-   - Enables follow-up questions and contextual understanding
-
-4. **Agent Configuration**
-   - Utilizes LangGraph's native `create_react_agent` implementation over generic `AgentExecutor`.
-   - Dynamic prompt compilation based on tool calling structures.
-
-5. **Flow Process**
-   - Receives user query via the `/chat/` endpoint
-   - Agent analyzes the query and determines which tools to use
-   - Searches appropriate sources (web or PubMed)
-   - Synthesizes information into a comprehensive response
-   - Returns formatted answer to the user
-
-## 🐳 Docker Setup
-
-### `Dockerfile`
-
-The `Dockerfile` defines the containerized environment for deploying the VQA model. It installs all dependencies, copies source files, and sets up both the **Flask API** and **Streamlit UI**.
-
-#### **Dockerfile Breakdown:**
-
-```dockerfile
-FROM python:3.10
-WORKDIR /app
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-COPY . .
-EXPOSE 5000 8501
-CMD ["sh", "-c", "python Deployment/app.py"]
+**`config.yaml`** — Model paths and data locations:
+```yaml
+finetune_model:
+  best: models/best-saved-model
+  last: models/last-saved-model
+  orignal_model_id: Salesforce/blip-vqa-base
+data_location:
+  data: data/bronze/flaviagiammarino___vqa-rad
+  train_processed_data: data/silver/train_dataset.pkl
+  test_processed_data: data/silver/test_dataset.pkl
+result: results
 ```
 
-#### **Build and Run Commands:**
+**`param.yaml`** — Training hyperparameters:
+```yaml
+params:
+  batch_size: 8
+  num_epochs: 50
+  learning_rate: 5e-5
+  weight_decay: 1e-4
+  gradient_accumulation_steps: 4
+  patience: 10
+```
 
+---
+
+## 📡 API Reference
+
+The FastAPI server exposes two endpoints. Full interactive documentation is auto-generated at **`/docs`** (Swagger UI) and **`/redoc`** (ReDoc).
+
+### `POST /predict/` — Image Question Answering
+
+Upload a medical image and ask a question about it.
+
+**Request** (multipart form-data):
 ```bash
-# Build the Docker image
-docker build -t vqa-app .
-
-# Run the container
-docker run -p 5000:5000 -p 8501:8501 vqa-app
-```
-
-## 📡 API Documentation
-
-### Predict Answer Endpoint
-
-```bash
-# Request format
-curl -X POST "http://127.0.0.1:5000/predict/" \
-  -F "file=@path/to/image.jpg" \
-  -F "question=What is in the image?"
+curl -X POST "http://localhost:5000/predict/" \
+  -F "file=@brain_scan.jpg" \
+  -F "question=Is there a tumor visible?"
 ```
 
 **Response:**
 ```json
 {
-  "answer": "The image shows a brain MRI scan with a visible tumor in the temporal lobe"
+  "answer": "yes"
 }
 ```
 
-### Chatbot Query Endpoint
+### `POST /chat/` — Medical AI Chatbot
 
+Ask medical questions powered by the LangGraph agent.
+
+**Request** (JSON):
 ```bash
-# Request format
-curl -X POST "http://127.0.0.1:5000/chat/" \
+curl -X POST "http://localhost:5000/chat/" \
   -H "Content-Type: application/json" \
-  -d '{"query": "What is Astrocytoma?"}'
+  -d '{"query": "What are the latest treatment options for glioblastoma?"}'
 ```
 
 **Response:**
 ```json
 {
-  "response": "Astrocytoma is a type of brain tumor that develops from star-shaped cells called astrocytes. These cells are part of the glial tissue, which supports and protects neurons in the brain and spinal cord. Astrocytomas can range from slow-growing (low-grade) to aggressive (high-grade) tumors. They are classified by the World Health Organization (WHO) into four grades (I-IV), with grade IV being the most aggressive form, also known as glioblastoma multiforme. Symptoms may include headaches, seizures, memory problems, and changes in behavior, depending on the tumor's location and size. Treatment typically involves surgery, radiation therapy, and chemotherapy, depending on the grade and location of the tumor."
+  "response": "Glioblastoma treatment typically involves a multimodal approach including surgical resection, radiation therapy (usually 60 Gy in 30 fractions), and concurrent temozolomide chemotherapy..."
 }
 ```
 
-### API Testing (`test_api.py`)
+### Python Client Example
 
 ```python
 import requests
 
-# Test the chat endpoint
-url = "http://127.0.0.1:5000/chat/"
-payload = {"query": "What is Astrocytoma?"}
-response = requests.post(url, json=payload)
+# Image VQA
+files = {"file": open("brain_scan.jpg", "rb")}
+data = {"question": "What abnormality is present?"}
+response = requests.post("http://localhost:5000/predict/", files=files, data=data)
+print(response.json())
+
+# Medical Chat
+payload = {"query": "Explain the differences between CT and MRI for brain imaging"}
+response = requests.post("http://localhost:5000/chat/", json=payload)
 print(response.json())
 ```
 
-## 📦 DVC Pipeline
+---
 
-### **Data Version Control Pipeline**
+## 🤖 LangGraph Agent
 
-DVC manages data pipelines efficiently, tracking data, models, and experiments while ensuring reproducibility.
+The medical chatbot uses a modern **LangGraph ReAct agent** architecture — a stateful, graph-based agent that reasons step-by-step and calls tools as needed.
 
-#### **Pipeline Stages:**
+### Architecture
 
-1. **Data Preprocessing Stage** 🔄
-   - **Input:** Raw data from `data/bronze/`
-   - **Process:** `preprocess_data.py` cleans and prepares the dataset
-   - **Output:** Processed data stored in `data/silver/`
+| Component | Technology | Purpose |
+|---|---|---|
+| **LLM** | Groq Gemma2-9b-it | Fast inference for reasoning and response generation |
+| **Agent Framework** | LangGraph `create_react_agent` | Graph-based ReAct loop with tool calling |
+| **Memory** | `MemorySaver` checkpointer | Persists conversation history across requests |
+| **Web Search** | SerpAPI | Real-time medical web search |
+| **Literature Search** | PubMed API | Peer-reviewed research paper retrieval |
 
-2. **Model Training Stage** 🏋️
-   - **Input:** Preprocessed data from `data/silver/` and hyperparameters from `params.yaml`
-   - **Process:** `train.py` trains the VQA model using PyTorch
-   - **Output:** Trained model saved in `Deployment/Model/`
+### How It Works
 
-3. **Model Evaluation Stage** ⚖️
-   - **Input:** Trained model from `Deployment/Model/` and test dataset from `data/silver/`
-   - **Process:** `evaluate.py` evaluates model performance using BLEU scores
-   - **Output:** Evaluation results saved in `results/`
-
-### **DVC Pipeline Configuration (`dvc.yaml`)**
-
-```yaml
-stages:
-  preprocess:
-    cmd: python src/preprocess_data.py
-    deps:
-      - src/preprocess_data.py
-      - data/bronze/
-    outs:
-      - data/silver/
-  
-  train:
-    cmd: python src/train.py
-    deps:
-      - src/train.py
-      - data/silver/
-      - params.yaml
-    outs:
-      - Deployment/Model/
-  
-  evaluate:
-    cmd: python src/evaluate.py
-    deps:
-      - src/evaluate.py
-      - Deployment/Model/
-      - data/silver/
-    outs:
-      - results/
+```
+User Query → LangGraph Agent → Reason → Select Tool(s) → Execute → Synthesize → Response
+                  ↑                                                      |
+                  └──────── Memory (MemorySaver) ←───────────────────────┘
 ```
 
-### **DVC Commands**
+1. The agent receives the user query along with conversation history
+2. The LLM reasons about which tools to invoke (or responds directly)
+3. Tools are called (PubMed, web search) and results are collected
+4. The LLM synthesizes a comprehensive answer from tool outputs
+5. Conversation state is persisted via the `MemorySaver` checkpointer
+
+---
+
+## 🔬 Training Pipeline
+
+The full training pipeline is managed by **DVC** for reproducibility and **MLflow** for experiment tracking.
+
+### Pipeline Stages
+
+```
+data/bronze/ ──→ preprocess ──→ data/silver/ ──→ train ──→ models/ ──→ evaluate ──→ results/
+```
+
+| Stage | Script | Input | Output |
+|---|---|---|---|
+| **Preprocess** | `src/preprocess_data.py` | Raw VQA-RAD dataset | Tokenized pickle files |
+| **Train** | `src/train.py` | Processed data + params | Fine-tuned BLIP model |
+| **Evaluate** | `src/evaluate.py` | Trained model + test data | BLEU scores & metrics |
+
+### Training Features
+
+- 🔥 **Mixed Precision Training** (FP16) for memory efficiency
+- 📈 **Gradient Accumulation** (4 steps) to simulate larger batch sizes
+- 🛑 **Early Stopping** with configurable patience
+- 📊 **MLflow Tracking** for all metrics, params, and model artifacts
+- 🔄 **Learning Rate Warmup** with linear decay scheduling
+- ✂️ **Gradient Clipping** (max_norm=1.0) for training stability
+
+### Run the Pipeline
 
 ```bash
-# Execute all pipeline stages in sequence
+# Execute all stages
 dvc repro
 
-# Push data and models to remote storage
+# Run individual stages
+dvc repro preprocess
+dvc repro train
+dvc repro evaluate
+
+# Push data to remote storage
 dvc push
 
 # Pull data from remote storage
 dvc pull
 ```
 
-## 📌 Installation
-
-Install all required dependencies with:
+### View Experiment Tracking
 
 ```bash
-pip install -r requirements.txt
+mlflow ui
+# Open http://localhost:5000 to view experiments
 ```
 
-## 📊 Results & Future Improvements
+---
 
-### Current Results
+## 🐳 Docker Deployment
 
-- 📈 Logs comprehensive metrics via MLflow
-- 📁 Stores detailed evaluation results in `./results/`
-- 💾 Saves the fine-tuned model in `Deployment/Model/`
+### Build and Run
 
-### ✨ Future Work
+```bash
+# Build the image
+docker build -t neurovision-vqa .
 
-- 🔬 Experiment with different model architectures
-- 📊 Add visualization tools for better model interpretation
-- 🌐 Expand language support for multilingual VQA
-- 🔄 Implement continuous learning capabilities
-- 🧠 Enhance the LangChain agent with more specialized medical tools
-- 🔍 Add image segmentation capabilities for more detailed medical image analysis
+# Run the container
+docker run -p 5000:5000 \
+  -e SERPAPI_API_KEY=your_key \
+  -e GROQ_API_KEY=your_key \
+  neurovision-vqa
+```
+
+### Dockerfile
+
+```dockerfile
+FROM python:3.10
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+COPY . .
+EXPOSE 5000
+CMD ["python", "Deployment/app.py"]
+```
+
+### Run with Streamlit UI
+
+To run both the API and the Streamlit frontend simultaneously:
+
+```bash
+# Terminal 1 — API Server
+python Deployment/app.py
+
+# Terminal 2 — Streamlit UI
+streamlit run Deployment/streamlit/main.py --server.port=8501
+```
+
+The Streamlit UI will be available at **`http://localhost:8501`**.
+
+---
+
+## 📁 Project Structure
+
+```
+NeuroVision-BHPC-VQA/
+├── .dvc/                         # DVC configuration
+├── .agents/                      # Agent workflows and skills
+│   └── workflows/
+│       └── git-push.md           # Git workflow for this project
+├── data/
+│   ├── bronze/                   # Raw VQA-RAD dataset (DVC-tracked)
+│   └── silver/                   # Preprocessed tokenized data
+├── Deployment/
+│   ├── app.py                    # FastAPI application entry point
+│   ├── test_api.py               # API integration tests
+│   └── streamlit/
+│       └── main.py               # Streamlit frontend
+├── models/
+│   ├── best-saved-model/         # Best checkpoint (by BLEU score)
+│   └── last-saved-model/         # Latest checkpoint
+├── src/
+│   ├── model.py                  # BLIP model loading & configuration
+│   ├── preprocess_data.py        # Dataset preprocessing pipeline
+│   ├── train.py                  # Training loop with MLflow tracking
+│   ├── evaluate.py               # BLEU score evaluation
+│   └── trl_rlhf_train.py        # Experimental RLHF training script
+├── results/                      # Evaluation outputs (JSON)
+├── mlruns/                       # MLflow experiment data
+├── config.yaml                   # Model & data path configuration
+├── param.yaml                    # Training hyperparameters
+├── dvc.yaml                      # DVC pipeline definition
+├── dvc.lock                      # DVC pipeline lock file
+├── Dockerfile                    # Container build configuration
+├── requirements.txt              # Python dependencies
+├── setup.sh                      # Automated environment setup script
+└── README.md
+```
+
+---
+
+## 📊 Results & Future Work
+
+### Current Capabilities
+
+- ✅ Fine-tuned BLIP model on VQA-RAD for medical image Q&A
+- ✅ BLEU score evaluation with early stopping on best checkpoint
+- ✅ Full experiment reproducibility via DVC + MLflow
+- ✅ Production-ready async API with FastAPI
+- ✅ Conversational medical AI agent with persistent memory
+
+### 🔮 Roadmap
+
+- [ ] Add QLoRA 4-bit quantization for efficient deployment on consumer hardware
+- [ ] RLHF fine-tuning for improved answer quality
+- [ ] Multi-modal RAG with medical image retrieval
+- [ ] Expand to chest X-ray and pathology datasets
+- [ ] Add image segmentation overlays for explainable predictions
+- [ ] Multilingual VQA support
+- [ ] Deployment to Hugging Face Spaces
+
+---
+
+## 📄 License
+
+This project is for educational and research purposes.
 
 ---
 
 <div align="center">
-  <p><b>Visual Question Answering Model</b> | Powered by BLIP Framework</p>
-</div>
-<div align="center">
-  <img src="https://img.shields.io/badge/Framework-BLIP-blue" alt="BLIP Framework" />
-  <img src="https://img.shields.io/badge/Built%20with-PyTorch-orange" alt="PyTorch" />
-  <img src="https://img.shields.io/badge/Agent-LangChain-purple" alt="LangChain" />
+
+**NeuroVision** — Medical Visual Question Answering
+
+Built with ❤️ using BLIP · FastAPI · LangGraph · PyTorch
+
 </div>
