@@ -46,7 +46,7 @@ mlflow.set_experiment("VQA_Model_Training")
 min_bleu_score = 0
 early_stopping_hook = 0
 tracking_information = []
-optimizer = torch.optim.AdamW(model.parameters(), lr=float(params["learning_rate"]), weight_decay=float(params["weight_decay"]))
+optimizer = torch.optim.AdamW(filter(lambda p: p.requires_grad, model.parameters()), lr=float(params["learning_rate"]), weight_decay=float(params["weight_decay"]))
 total_steps = len(train_dataloader) * num_epochs
 warmup_steps = total_steps // 10
 scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=warmup_steps, num_training_steps=total_steps)
@@ -123,6 +123,6 @@ with mlflow.start_run():
         scheduler.step()  
 
     
-    signature = infer_signature(input_ids.cpu().numpy(), model(input_ids).logits.cpu().detach().numpy())
-    mlflow.pytorch.log_model(model, "VQA_model", signature=signature)
-    print("Model logged with MLflow.")
+    # Log the saved PEFT adapters as an artifact instead of trying to pickle the Quantized model
+    mlflow.log_artifacts(model_config["best"], artifact_path="VQA_model_best")
+    print("Model adapters logged with MLflow.")
