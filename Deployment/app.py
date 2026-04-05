@@ -1,32 +1,41 @@
 import torch
-from flask import Flask, request, jsonify
+from fastapi import FastAPI, File, UploadFile, Form, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 from transformers import BlipProcessor, BlipForQuestionAnswering
-from langchain.agents import initialize_agent, AgentType
-from langchain.tools import Tool
+from langchain_core.tools import Tool
 from langchain_community.utilities import SerpAPIWrapper, PubMedAPIWrapper
 from langchain_groq import ChatGroq
-from langchain.memory import ConversationBufferMemory
+from langgraph.prebuilt import create_react_agent
+from langgraph.checkpoint.memory import MemorySaver
 from dotenv import load_dotenv
 import os
 from PIL import Image
-from flask_cors import CORS
+import uvicorn
+import io
 
- 
 load_dotenv()
 os.getenv("SERPAPI_API_KEY")
 os.getenv("GROQ_API_KEY")
 
- 
-app = Flask(__name__)
-CORS(app)
+app = FastAPI()
 
- 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
- 
-fine_tuned_model = BlipForQuestionAnswering.from_pretrained(os.path.join("Deployment/Model/14-last-blip-saved-model")).to(device)
+
+fine_tuned_model = BlipForQuestionAnswering.from_pretrained(os.path.join("models", "last-saved-model")).to(device)
 processor = BlipProcessor.from_pretrained("Salesforce/blip-vqa-base")
- 
-memory = ConversationBufferMemory()
+
+# Initialize memory using the appropriate checkpointer
+memory = MemorySaver()
+
 def chat_bot_query(query: str):
     search_tool = Tool(
         name="Medical_Web_Search",
@@ -39,22 +48,22 @@ def chat_bot_query(query: str):
         func=PubMedAPIWrapper().run,
         description="Searches PubMed for research papers related to brain, CT, and MRI scans."
     )
+    
+    tools = [search_tool, pubmed_tool]
+    llm = ChatGroq(model="gemma2-9b-it")
+    
+    # Create the modern ReAct agent using langgraph
+    agent_executor = create_react_agent(model=llm, tools=tools, checkpointer=memory)
 
-    agent = initialize_agent(
-        agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
-        tools=[search_tool, pubmed_tool],
-        llm=ChatGroq(model="gemma2-9b-it"),
-        memory=memory,
-        verbose=False,
-        max_iterations=10,
-        handle_parsing_errors=True
+    # Invoke the agent graph
+    response = agent_executor.invoke(
+        {"messages": [{"role": "user", "content": query}]},
+        config={"configurable": {"thread_id": "global_thread"}}
     )
+    
+    return response["messages"][-1].content
 
-    response = agent.run(query)
-    return response
 
-
- 
 def predict_answer(image, question):
     try:
         image = image.convert('RGB')
@@ -65,34 +74,27 @@ def predict_answer(image, question):
     except Exception as e:
         return f"Error in prediction: {e}"
 
- 
-@app.route('/predict/', methods=['GET', 'POST'])
-def predict():
-    try:
-        file = request.files['file']
-        question = request.form['question']
-        if not file or not question:
-            return jsonify({'error': 'No file or question provided'}), 400
-        image = Image.open(file)
-        answer = predict_answer(image, question)
-        return jsonify({'answer': answer})
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
- 
-@app.route('/chat/', methods=['POST'])
-def chat():
-    try:
-        data = request.get_json()
-        query = data.get('query')
-        if not query:
-            return jsonify({'error': 'No query provided'}), 400
+class ChatRequest(BaseModel):
+    query: str
 
-        response = chat_bot_query(query)
-        return jsonify({'response': response})
+@app.post("/predict/")
+async def predict(question: str = Form(...), file: UploadFile = File(...)):
+    try:
+        image_bytes = await file.read()
+        image = Image.open(io.BytesIO(image_bytes))
+        answer = predict_answer(image, question)
+        return {"answer": answer}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/chat/")
+async def chat(request: ChatRequest):
+    try:
+        response = chat_bot_query(request.query)
+        return {"response": response}
     except Exception as e:
         print(e)
-        return jsonify({'error': str(e)}), 500
+        raise HTTPException(status_code=500, detail=str(e))
 
- 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port='5000')
+    uvicorn.run(app, host="0.0.0.0", port=5000)

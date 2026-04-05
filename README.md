@@ -61,7 +61,7 @@ VQA/
 │   │   ├── .gitignore    # Ignore unnecessary files in Streamlit
 │   │   ├── .env          # Environment variables
 │   │   ├── main.py       # Streamlit app entry point
-│   ├── app.py            # Flask API entry point
+│   ├── app.py            # FastAPI entry point
 │   ├── test_api.py       # API testing script
 │── logs/                 # Logs for debugging and tracking
 │── mlruns/               # MLflow experiment tracking
@@ -124,26 +124,26 @@ VQA/
 
 ## 🌐 API Architecture
 
-### `app.py` - Flask API Implementation
+### `app.py` - FastAPI Implementation
 
-The Flask API serves as the backbone of our deployment strategy, offering two primary endpoints:
+The FastAPI application serves as the fast, asynchronous backbone of our deployment strategy, offering two primary endpoints:
 
 1. **Image Question Answering (`/predict/`)**
-   - Receives an image file and a question
+   - Receives an image file and a question using FastAPI's standard `File` and `Form` dependencies.
    - Processes the image using the BLIP processor
    - Passes the processed inputs to the fine-tuned model
    - Returns the generated answer as a JSON response
 
 2. **Medical Chatbot (`/chat/`)**
-   - Accepts a text query related to medical topics
+   - Accepts a text query related to medical topics using Pydantic validation models.
    - Forwards the query to a LangChain-powered agent
    - Returns comprehensive medical information from multiple sources
 
 **Key Components:**
-- **CORS Support**: Enables cross-origin requests for frontend integration
+- **CORS Support**: Enables cross-origin requests via FastAPI `CORSMiddleware`.
 - **Environment Variables**: Securely loads API keys for external services
 - **GPU/CPU Detection**: Automatically selects the appropriate device for model inference
-- **Error Handling**: Implements robust exception handling for all endpoints
+- **Error Handling**: Implements `HTTPException` error captures for all endpoints
 
 ## 🤖 LangChain Agent System
 
@@ -160,13 +160,12 @@ Our system employs a sophisticated LangChain agent architecture to handle medica
    - Configured for medical domain specialization
 
 3. **Memory System**
-   - Implements `ConversationBufferMemory` to maintain context across multiple queries
+   - Implements LangGraph's `MemorySaver` checkpointer to consistently securely maintain context.
    - Enables follow-up questions and contextual understanding
 
 4. **Agent Configuration**
-   - Uses `ZERO_SHOT_REACT_DESCRIPTION` agent type for reasoning capabilities
-   - Limited to 10 iterations to ensure timely responses
-   - Includes error handling for parsing issues
+   - Utilizes LangGraph's native `create_react_agent` implementation over generic `AgentExecutor`.
+   - Dynamic prompt compilation based on tool calling structures.
 
 5. **Flow Process**
    - Receives user query via the `/chat/` endpoint

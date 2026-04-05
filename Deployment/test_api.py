@@ -1,6 +1,6 @@
 import requests
 
-# Define the URL of the Flask server
+# Define the URL of the FastAPI server
 url = "http://127.0.0.1:5000/chat/"
 
 # Define the query you want to send
