@@ -1,5 +1,12 @@
 import os
-from huggingface_hub import HfApi, create_repo
+
+# Redirect HuggingFace caching to the current external drive to bypass C: drive disk space issues
+project_root = os.path.dirname(os.path.dirname(__file__))
+os.environ["HF_HOME"] = os.path.join(project_root, ".hf_cache")
+os.environ["HF_HUB_CACHE"] = os.environ["HF_HOME"]
+
+from huggingface_hub import HfApi, create_repo, login
+import getpass
 
 def upload_model_to_hub():
     # Replace with your actual repo ID
@@ -9,6 +16,19 @@ def upload_model_to_hub():
     if not os.path.exists(model_folder):
         print(f"Error: Model folder not found at {model_folder}")
         print("Please ensure the model training has completed and weights are saved locally.")
+        return
+
+    token = os.environ.get("HF_TOKEN")
+    if not token:
+        print("🔑 Please enter your Hugging Face Access Token with WRITE permissions (input will be hidden):")
+        import getpass
+        token = getpass.getpass("Token: ")
+    
+    print("\nAuthenticating...")
+    try:
+        login(token=token.strip(), add_to_git_credential=True)
+    except Exception as e:
+        print(f"❌ Login failed! Please check your token. Error: {e}")
         return
 
     print(f"Connecting to Hugging Face Hub to upload {model_folder} to {repo_id}...")
