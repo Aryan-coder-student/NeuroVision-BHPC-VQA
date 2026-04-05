@@ -1,5 +1,6 @@
-torch --index-url https://download.pytorch.org/whl/cu118
-torchvision --index-url https://download.pytorch.org/whl/cu118
+--extra-index-url https://download.pytorch.org/whl/cu118
+torch
+torchvision
 transformers
 streamlit
 pandas
@@ -10,11 +11,19 @@ spacy
 mlflow
 scikit-learn
 PyYAML
-flask
-flask-cors
+fastapi
+uvicorn[standard]
+python-multipart
 langchain
 langchain-groq
-langchain-community 
+langchain-community
+langchainhub
 google-search-results
 serpapi
 xmltodict
+peft
+bitsandbytes
+trl
+accelerate
+datasets>=2.19.0
+pyarrow

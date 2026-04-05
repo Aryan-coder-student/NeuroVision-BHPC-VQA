@@ -1,3 +1,6 @@
 models/best-saved-model
 models/last-saved-model
 Deployment/.env
+.venv/
+__pycache__/
+*.pyc
